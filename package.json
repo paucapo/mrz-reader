@@ -1,0 +1,30 @@
+{
+  "name": "mrzreader",
+  "version": "1.0.0",
+  "description": "MRZReader",
+  "author": "Pau Capó",
+  "license": "GPLv3",
+  "scripts": {
+    "build": "node node_modules/cross-env/dist/bin/cross-env.js BABEL_ENV=build rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paucapo/MRZReader.git"
+  },
+  "bugs": {
+    "url": "https://github.com/paucapo/MRZReader/issues"
+  },
+  "homepage": "https://github.com/paucapo/MRZReader",
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.44",
+    "@babel/core": "^7.0.0-beta.44",
+    "@babel/node": "^7.0.0-beta.44",
+    "@babel/preset-env": "^7.0.0-beta.44",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "cross-env": "^5.1.4",
+    "rollup": "^0.57.1",
+    "rollup-plugin-babel": "^4.0.0-beta.4",
+    "rollup-plugin-uglify": "^3.0.0"
+  }
+}
