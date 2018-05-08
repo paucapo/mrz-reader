@@ -1,11 +1,6 @@
 {
   "env": {
-    "test": {
-      "presets": [
-        "@babel/preset-env"
-      ]
-    },
-    "build": {
+    "production": {
       "presets": [
         [
           "@babel/preset-env",

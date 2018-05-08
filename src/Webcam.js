@@ -107,7 +107,6 @@ class Webcam {
 
     }
 
-
     start() {
         if (this.devices_list === false) {
             console.log('Use the onInit event!');

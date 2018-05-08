@@ -1,20 +1,21 @@
 {
-  "name": "mrzreader",
+  "name": "mrz-reader",
   "version": "1.0.0",
-  "description": "MRZReader",
+  "description": "Read Travel Document with a Webcam in your browser.",
   "author": "Pau Capó",
   "license": "GPLv3",
-  "scripts": {
-    "build": "node node_modules/cross-env/dist/bin/cross-env.js BABEL_ENV=build rollup -c"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/paucapo/MRZReader.git"
+    "url": "git+https://github.com/paucapo/mrz-reader.git"
   },
   "bugs": {
-    "url": "https://github.com/paucapo/MRZReader/issues"
+    "url": "https://github.com/paucapo/mrz-reader/issues"
   },
-  "homepage": "https://github.com/paucapo/MRZReader",
+  "homepage": "https://github.com/paucapo/mrz-reader",
+  "scripts": {
+    "build": "rollup -c --environment BABEL_ENV:production",
+    "watch": "rollup -c -w --environment BABEL_ENV:production"
+  },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.44",
     "@babel/core": "^7.0.0-beta.44",
@@ -22,7 +23,6 @@
     "@babel/preset-env": "^7.0.0-beta.44",
     "babel-core": "^7.0.0-bridge.0",
     "babel-plugin-external-helpers": "^6.22.0",
-    "cross-env": "^5.1.4",
     "rollup": "^0.57.1",
     "rollup-plugin-babel": "^4.0.0-beta.4",
     "rollup-plugin-uglify": "^3.0.0"
