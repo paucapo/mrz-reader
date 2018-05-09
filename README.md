@@ -6,6 +6,10 @@ Thank's to [Josep Portella](https://josep-portella.com/) for his help and all th
 
 ---
 
+# This README is not finished, the better way to see this library working is look at the *demo* directory.
+
+---
+
 ## Installation
 
 * Clone the repository
