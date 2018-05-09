@@ -4,77 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>mrz-reader.js</title>
-    <script type="text/javascript" src="../dist/mrz-reader.min.js"></script>
-    <style>
-        video, canvas, img {
-            max-height: 400px;
-            max-width: 400px;
-        }
-
-        #dump {
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, .9);
-            color: #fff;
-        }
-
-    </style>
 </head>
 
 <body>
 
-<a href="#" id="capture-init">Capture</a>
-
-<div class="overlay hidden">
-    <a href="#" id="capture-close">Close</a>
-    <div id="cam-here"></div>
-</div>
-
-<pre id="dump"></pre>
-
-<script type="text/javascript">
-
-    var reader = new MRZ.Reader({
-        target: 'cam-here',
-        success: function (response) {
-            console.log('success');
-            document.getElementById('dump').innerText = JSON.stringify(response, null, 2);
-            document.querySelector('.overlay').style.display = 'none';
-        }
-    });
-
-    document.getElementById('capture-init').addEventListener('click', function () {
-
-        // display overlay
-        // $('.overlay').show();
-        document.querySelector('.overlay').style.display = 'block';
-
-        // init library here
-        reader.start();
-    });
-
-    document.getElementById('capture-close').addEventListener('click', function () {
-
-        // $('.overlay').hide();
-        document.querySelector('.overlay').style.display = 'none';
-        if (reader) {
-            reader.stop();
-        }
-
-    });
-
-</script>
-
+<ul>
+    <li><a href="./document.html">MRZ.Document</a></li>
+    <li><a href="./image.html">MRZ.Scanner + MRZ.Document</a></li>
+    <li><a href="./webcam.html">MRZ.Reader (MRZ.Webcam + MRZ.Scanner + MRZ.Document)</a></li>
+</ul>
 
 </body>
 </html>
