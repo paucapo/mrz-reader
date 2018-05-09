@@ -83,7 +83,7 @@ class Webcam {
                 this.devicesSelect.removeChild(this.devicesSelect.firstChild);
             }
             this.devices_list = [];
-            this.device = 0;
+            this.device = parseInt(window.localStorage.getItem('device') || 0);
             navigator.mediaDevices
                 .enumerateDevices()
                 .then((list) => {
@@ -94,10 +94,12 @@ class Webcam {
                             let option = document.createElement('option');
                             option.innerText = device.label;
                             option.value = index.toString();
+                            option.selected = index === this.device;
                             index++;
                             this.devicesSelect.appendChild(option);
                         }
                     });
+                    this.device = this.devices_list[this.device] ? this.device : 0;
                     this.options.onReady();
                 });
         } else {
@@ -133,6 +135,7 @@ class Webcam {
 
     change_device() {
         this.device = parseInt(this.devicesSelect.value);
+        window.localStorage.setItem('device', this.device);
         this.stop_stream();
         this.request();
     };
@@ -140,6 +143,7 @@ class Webcam {
     request() {
         if (navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined) {
             let constraints = false;
+
             if (this.device !== false && this.devices_list[this.device]) {
                 constraints = {
                     audio: false,

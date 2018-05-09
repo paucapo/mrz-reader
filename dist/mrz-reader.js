@@ -79,7 +79,7 @@
           }
 
           this.devices_list = [];
-          this.device = 0;
+          this.device = parseInt(window.localStorage.getItem('device') || 0);
           navigator.mediaDevices.enumerateDevices().then(function (list) {
             var index = 0;
             list.forEach(function (device) {
@@ -88,11 +88,13 @@
                 var option = document.createElement('option');
                 option.innerText = device.label;
                 option.value = index.toString();
+                option.selected = index === _this.device;
                 index++;
 
                 _this.devicesSelect.appendChild(option);
               }
             });
+            _this.device = _this.devices_list[_this.device] ? _this.device : 0;
 
             _this.options.onReady();
           });
@@ -133,6 +135,7 @@
 
       _proto.change_device = function change_device() {
         this.device = parseInt(this.devicesSelect.value);
+        window.localStorage.setItem('device', this.device);
         this.stop_stream();
         this.request();
       };
