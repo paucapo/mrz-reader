@@ -769,6 +769,7 @@
     function () {
       function Document(mrz) {
         mrz = mrz.trim();
+        this.type = false;
         this.total_length = mrz.replace(/\n/g, '').length;
         this.rows = mrz.split("\n");
         this.exceptions = {
@@ -1076,21 +1077,13 @@
 
         if (this.rows.length === 2 && this.total_length === 88 && first === 'P') {
           doc = this.TravelDocument3();
-        }
-
-        if (this.rows.length === 2 && this.total_length === 88 && first === 'V') {
+        } else if (this.rows.length === 2 && this.total_length === 88 && first === 'V') {
           doc = this.VisaA();
-        }
-
-        if (this.rows.length === 2 && this.total_length === 72 && first === 'V') {
+        } else if (this.rows.length === 2 && this.total_length === 72 && first === 'V') {
           doc = this.VisaB();
-        }
-
-        if (this.rows.length === 3 && this.total_length === 90) {
+        } else if (this.rows.length === 3 && this.total_length === 90) {
           doc = this.TravelDocument1();
-        }
-
-        if (this.rows.length === 2 && this.total_length === 72) {
+        } else if (this.rows.length === 2 && this.total_length === 72) {
           doc = this.TravelDocument2();
         }
 
@@ -1103,6 +1096,7 @@
 
       _proto.TravelDocument3 = function TravelDocument3() {
         // Passport
+        this.type = 'TD3';
         return {
           'document_type': this.sub(0, 1, 2),
           'document_country': this.sub(0, 3, 5),
@@ -1125,6 +1119,7 @@
       };
 
       _proto.VisaA = function VisaA() {
+        this.type = 'VisaA';
         return {
           'document_type': this.sub(0, 1, 2),
           'document_country': this.sub(0, 3, 5),
@@ -1144,6 +1139,7 @@
       };
 
       _proto.VisaB = function VisaB() {
+        this.type = 'VisaB';
         return {
           'document_type': this.sub(0, 1, 2),
           'document_country': this.sub(0, 3, 5),
@@ -1164,6 +1160,7 @@
 
       _proto.TravelDocument1 = function TravelDocument1() {
         // DNI
+        this.type = 'TD1';
         return {
           'document_type': this.sub(0, 1, 2),
           'document_country': this.sub(0, 3, 5),
@@ -1185,6 +1182,7 @@
       };
 
       _proto.TravelDocument2 = function TravelDocument2() {
+        this.type = 'TD2';
         return {
           'document_type': this.sub(0, 1, 2),
           'document_country': this.sub(0, 3, 5),

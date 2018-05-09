@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Documentation used in mrz-reader.js</title>
+</head>
+<body>
+
+<h1>Documentation used in mrz-reader.js</h1>
+
+<h2>OCR documentation</h2>
+<ul>
+    <li>All the OCR part is based with the work of <a href="https://josep-portella.com/en/writings/how-does-magia-dni-work/">Josep Portella</a> in <a href="https://play.google.com/store/apps/details?id=jpf.android.magiadni">Magia DNI</a>.</li>
+</ul>
+
+<h2>ICAO Documentation</h2>
+<ul>
+
+    <li><a href="https://www.icao.int/publications/pages/publication.aspx?docnum=9303">ICAO website</a></li>
+    <li><a href="./9303_p4_cons_en.pdf">TD3</a> - <em>Passports</em></li>
+    <li><a href="./9303_p5_cons_en.pdf">TD1</a> - <em>DNI</em></li>
+    <li><a href="./9303_p6_cons_en.pdf">TD2 & Check Digits - 4.2</a></li>
+    <li><a href="./9303_p7_cons_en.pdf">VisaA & VisaB</a></li>
+    <li><a href="./9303_p3_cons_en.pdf">Check Digits calculation - 4.9</a></li>
+
+</ul>
+
+<h2>Global information</h2>
+<ul>
+    <li><a href="https://documentation.anyline.com/toc/modules/mrz/index.html">Anyline Documentation</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Machine-readable_passport">Wikipedia</a></li>
+</ul>
+
+</body>
+</html>

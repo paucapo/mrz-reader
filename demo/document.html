@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>mrz-reader.js</title>
+    <script type="text/javascript" src="../dist/mrz-reader.min.js"></script>
+    <style>
+        textarea {
+            display: block;
+            width: 500px;
+            height: 100px;
+        }
+
+        pre {
+            background-color: #efefef;
+        }
+
+    </style>
+</head>
+
+<body>
+<select id="strings"></select>
+<textarea id="mrz"></textarea>
+<button id="button">Parse MRZ</button>
+
+<pre id="dump"></pre>
+
+<script type="text/javascript">
+    var strings = {
+        TD1: [
+            'I<UTOD231458907<<<<<<<<<<<<<<<',
+            '7408122F1204159UTO<<<<<<<<<<<6',
+            'ERIKSSON<<ANNA<MARIA<<<<<<<<<<',
+        ],
+        TD2: [
+            'I<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<',
+            'D231458907UTO7408122F1204159<<<<<<<6',
+        ],
+        TD3: [
+            'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<',
+            'L898902C36UTO7408122F1204159ZE184226B<<<<<10',
+        ],
+        VisaA: [
+            'V<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<',
+            'L898902C<3UTO6908061F9406236ZE184226B<<<<<<<',
+        ],
+        VisaB: [
+            'V<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<',
+            'L898902C<3UTO7008061F9406236ZE184226',
+        ],
+    };
+
+    // get button
+    var $strings = document.getElementById('strings');
+
+    // get mrz
+    var $mrz = document.getElementById('mrz');
+
+    // get button
+    var $button = document.getElementById('button');
+
+    // get dump
+    var $dump = document.getElementById('dump');
+
+    // populate $strings selector
+    for (var type in strings) {
+        var $option = document.createElement('option');
+        // $option.value = type;
+        // $option.innerText = strings[type];
+        $option.innerText = type;
+        $strings.appendChild($option);
+    }
+    $strings.addEventListener('change', function () {
+        $mrz.value = strings[$strings.value].join("\n");
+        $dump.innerText = '';
+    });
+    $mrz.value = strings.TD1.join("\n");
+
+    // add click event
+    $button.addEventListener('click', function (e) {
+        e.preventDefault();
+        var document = new MRZ.Document($mrz.value);
+        var result = document.parse();
+        $dump.innerText = 'Type: ' + document.type + "\nData:\n" + JSON.stringify(result, null, 2);
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>mrz-reader.js</title>
+    <script type="text/javascript" src="../dist/mrz-reader.min.js"></script>
+    <style>
+        video, canvas, img {
+            max-height: 400px;
+            max-width: 400px;
+        }
+
+        #dump {
+        }
+
+    </style>
+</head>
+
+<body>
+
+<a href="#" id="capture-toggle">Start</a>
+
+<div id="cam-here"></div>
+
+<pre id="dump"></pre>
+
+<script type="text/javascript">
+
+    // create Reader object
+    var reader = new MRZ.Reader({
+        target: 'cam-here',
+        success: function (response) {
+            // on mrz detected. dump the results
+            document.getElementById('dump').innerText = JSON.stringify(response, null, 2);
+        }
+    });
+
+    // get toggle
+    var $capture = document.getElementById('capture-toggle');
+
+    // add click event
+    $capture.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // something went wrong at the init
+        if (!reader) {
+            return;
+        }
+
+        if (reader.webcam.isOn === false) {
+            reader.start();
+            $capture.innerText = 'Stop';
+        } else {
+            reader.stop();
+            $capture.innerText = 'Start';
+        }
+    });
+
+</script>
+
+
+</body>
+</html>
