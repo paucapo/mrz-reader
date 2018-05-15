@@ -13,8 +13,16 @@
         this.options = Webcam.extend({}, {
           debug: false,
           waitingText: 'waiting...',
-          devicesText: '',
           coverColor: 'rgba(0, 0, 0, 0.5)',
+          sizes: [{
+            label: '3 lines',
+            start: 50,
+            end: 80
+          }, {
+            label: '2 lines',
+            start: 60,
+            end: 80
+          }],
           onReady: function onReady() {},
           onStart: function onStart() {},
           onStop: function onStop() {}
@@ -26,46 +34,63 @@
           return;
         }
 
-        this.container.className = 'webcam-container';
+        if (this.options.sizes.length <= 0) {
+          this.log('missing sizes');
+          return;
+        }
+
+        this.container.className = 'mrz-reader-container';
         this.container.innerHTML = '';
-        this.devices = document.createElement('div');
-        this.devices.innerHTML = this.options.devicesText;
-        this.devices.className = 'webcam-devices';
+        this.selectors = document.createElement('div');
+        this.selectors.className = 'mrz-reader-selectors';
+        this.selectors.style.display = 'none';
+        this.container.appendChild(this.selectors);
+        this.devices = document.createElement('select');
+        this.devices.onchange = this.change_device.bind(this);
         this.devices.style.display = 'none';
-        this.container.appendChild(this.devices);
-        this.devicesSelect = document.createElement('select');
-        this.devicesSelect.onchange = this.change_device.bind(this);
-        this.devices.appendChild(this.devicesSelect);
+        this.selectors.appendChild(this.devices);
+        this.size = 0;
+        this.sizes = document.createElement('select');
+        this.sizes.onchange = this.change_size.bind(this);
+        this.options.sizes.forEach(function (size, index) {
+          var option = document.createElement('option');
+          option.value = index.toString();
+          option.innerText = size.label;
+
+          _this.sizes.appendChild(option);
+        });
+        this.selectors.appendChild(this.sizes);
         this.waiting = document.createElement('div');
         this.waiting.innerHTML = this.options.waitingText;
-        this.waiting.className = 'webcam-waiting';
+        this.waiting.className = 'mrz-reader-waiting';
         this.waiting.style.display = 'none';
         this.container.appendChild(this.waiting);
         this.webcam = document.createElement('div');
+        this.webcam.className = 'mrz-reader-webcam';
         this.webcam.style.display = 'none';
         this.webcam.style.position = 'relative';
         this.webcam.style.fontSize = '0';
         this.container.appendChild(this.webcam);
         this.video = document.createElement('video');
-        this.video.className = 'webcam-video';
+        this.video.className = 'mrz-reader-video';
         this.webcam.appendChild(this.video);
         this.coverTop = document.createElement('div');
         this.coverTop.style.position = 'absolute';
         this.coverTop.style.top = '0';
         this.coverTop.style.left = '0';
         this.coverTop.style.right = '0';
-        this.coverTop.style.bottom = '50%';
+        this.coverTop.style.bottom = 100 - this.get_size().start + '%';
         this.coverTop.style.background = this.options.coverColor;
-        this.coverTop.className = 'webcam-cover-top';
+        this.coverTop.className = 'mrz-reader-cover-top';
         this.webcam.appendChild(this.coverTop);
         this.coverBottom = document.createElement('div');
         this.coverBottom.style.position = 'absolute';
-        this.coverBottom.style.top = '83.33%';
+        this.coverBottom.style.top = this.get_size().end + '%';
         this.coverBottom.style.left = '0';
         this.coverBottom.style.right = '0';
         this.coverBottom.style.bottom = '0';
         this.coverBottom.style.background = this.options.coverColor;
-        this.coverBottom.className = 'webcam-cover-top';
+        this.coverBottom.className = 'mrz-reader-cover-top';
         this.webcam.appendChild(this.coverBottom);
         this.streams = [];
         this.isOn = false;
@@ -74,8 +99,8 @@
 
         if (navigator.mediaDevices.enumerateDevices !== undefined) {
           // remove all current childs
-          while (this.devicesSelect.firstChild) {
-            this.devicesSelect.removeChild(this.devicesSelect.firstChild);
+          while (this.devices.firstChild) {
+            this.devices.removeChild(this.devices.firstChild);
           }
 
           this.devices_list = [];
@@ -91,7 +116,7 @@
                 option.selected = index === _this.device;
                 index++;
 
-                _this.devicesSelect.appendChild(option);
+                _this.devices.appendChild(option);
               }
             });
             _this.device = _this.devices_list[_this.device] ? _this.device : 0;
@@ -114,8 +139,8 @@
 
         this.webcam.style.display = 'none';
 
-        if (this.devices_list.length > 0) {
-          this.devices.style.display = 'block';
+        if (this.devices_list.length > 1) {
+          this.devices.style.display = 'inline';
         }
 
         this.isOn = true;
@@ -129,15 +154,26 @@
         this.options.onStop();
         this.webcam.style.display = 'none';
         this.waiting.style.display = 'none';
-        this.devices.style.display = 'none';
+        this.selectors.style.display = 'none';
         this.log('stopped');
       };
 
       _proto.change_device = function change_device() {
-        this.device = parseInt(this.devicesSelect.value);
+        this.device = parseInt(this.devices.value);
         window.localStorage.setItem('device', this.device);
         this.stop_stream();
         this.request();
+      };
+
+      _proto.change_size = function change_size() {
+        this.size = parseInt(this.sizes.value);
+        this.log('change size [' + this.get_size().label + ']');
+        this.coverTop.style.bottom = 100 - this.get_size().start + '%';
+        this.coverBottom.style.top = this.get_size().end + '%';
+      };
+
+      _proto.get_size = function get_size() {
+        return this.options.sizes[this.size];
       };
 
       _proto.request = function request() {
@@ -236,6 +272,7 @@
         this.log('camera loaded');
         this.webcam.style.display = 'inline-block';
         this.waiting.style.display = 'none';
+        this.selectors.style.display = 'block';
         this.options.onStart(this);
       };
 
@@ -244,9 +281,11 @@
         var context = snapshot.getContext('2d');
         var w = this.video.videoWidth;
         var h = this.video.videoHeight;
+        var size = this.get_size();
+        var size_height = (size.end - size.start) / 100;
         snapshot.width = w;
-        snapshot.height = h / 3;
-        context.drawImage(this.video, 0, -(h / 2));
+        snapshot.height = h * size_height;
+        context.drawImage(this.video, 0, -(h * (size.start / 100)));
         return snapshot;
       };
 
@@ -1354,8 +1393,18 @@
           // miliseconds
           waitingText: 'waiting...',
           coverColor: 'rgba(0, 0, 0, 0.5)',
-          readerSuccess: function readerSuccess(response) {},
-          readerError: function readerError(response) {},
+          sizes: [{
+            label: '3 lines',
+            start: 50,
+            end: 80
+          }, {
+            label: '2 lines',
+            start: 60,
+            end: 80
+          }],
+          snapshot: function snapshot(_snapshot) {},
+          readerSuccess: function readerSuccess(response, logs) {},
+          readerError: function readerError(response, logs) {},
           camReady: function camReady() {},
           camStarted: function camStarted() {},
           camStopped: function camStopped() {}
@@ -1364,6 +1413,7 @@
           debug: true,
           waitingText: this.options.waitingText,
           coverColor: this.options.coverColor,
+          sizes: this.options.sizes,
           onReady: function onReady() {
             _this.options.camReady();
           },
@@ -1394,16 +1444,18 @@
 
         if (this.webcam.isOn === false) return;
         var snapshot = this.webcam.snapshot();
-        var mrz = new Scanner().parseCanvas(snapshot);
-        var doc = new Document(mrz).parse(); // recall function after 100ms
+        var scanner = new Scanner();
+        var mrz = scanner.parseCanvas(snapshot);
+        var doc = new Document(mrz).parse();
+        this.options.snapshot(snapshot); // recall function after 100ms
 
         if (doc === false || doc.valid.document_valid === false) {
-          this.options.readerError(doc);
+          this.options.readerError(doc, scanner.logs);
           setTimeout(function () {
             _this2.snapshot();
           }, this.options.interval);
         } else {
-          this.options.readerSuccess(doc);
+          this.options.readerSuccess(doc, scanner.logs);
           this.stop();
         }
       };

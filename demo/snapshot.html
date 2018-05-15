@@ -6,14 +6,15 @@
     <title>mrz-reader.js / webcam</title>
     <script type="text/javascript" src="../dist/mrz-reader.min.js"></script>
     <style>
-        video, canvas, img {
+        video, canvas, img, canvas {
+            display: block;
             max-height: 400px;
             max-width: 400px;
         }
 
-        #dump {
+        #cam-here .mrz-reader-webcam {
+            display: none !important;
         }
-
     </style>
 </head>
 
@@ -23,17 +24,29 @@
 
 <div id="cam-here"></div>
 
+<canvas id="snapshot"></canvas>
+
 <pre id="dump"></pre>
+<pre id="logs"></pre>
 
 <script type="text/javascript">
+
+    var $snapshot = document.getElementById('snapshot');
 
     // create Reader object
     var reader = new MRZ.Reader({
         target: 'cam-here',
+        snapshot: function (snapshot) {
+            $snapshot.width = snapshot.width;
+            $snapshot.height = snapshot.height;
+            var ctx = $snapshot.getContext('2d');
+            ctx.drawImage(snapshot, 0, 0);
+        },
         readerSuccess: function (response) {
             // on mrz detected. dump the results
             document.getElementById('dump').innerText = JSON.stringify(response, null, 2);
-        }
+        },
+
     });
 
     // get toggle

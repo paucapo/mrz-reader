@@ -10,9 +10,23 @@ class Reader {
             interval: 100, // miliseconds
             waitingText: 'waiting...',
             coverColor: 'rgba(0, 0, 0, 0.5)',
-            readerSuccess: function (response) {
+            sizes: [
+                {
+                    label: '3 lines',
+                    start: 50,
+                    end: 80,
+                },
+                {
+                    label: '2 lines',
+                    start: 60,
+                    end: 80,
+                },
+            ],
+            snapshot: function (snapshot) {
             },
-            readerError: function (response) {
+            readerSuccess: function (response, logs) {
+            },
+            readerError: function (response, logs) {
             },
             camReady: function () {
             },
@@ -26,6 +40,7 @@ class Reader {
             debug: true,
             waitingText: this.options.waitingText,
             coverColor: this.options.coverColor,
+            sizes: this.options.sizes,
             onReady: () => {
                 this.options.camReady();
             },
@@ -53,17 +68,20 @@ class Reader {
         if (this.webcam.isOn === false) return;
 
         let snapshot = this.webcam.snapshot();
-        let mrz = (new Scanner()).parseCanvas(snapshot);
+        let scanner = new Scanner();
+        let mrz = scanner.parseCanvas(snapshot);
         let doc = (new Document(mrz)).parse();
+
+        this.options.snapshot(snapshot);
 
         // recall function after 100ms
         if (doc === false || doc.valid.document_valid === false) {
-            this.options.readerError(doc);
+            this.options.readerError(doc, scanner.logs);
             setTimeout(() => {
                 this.snapshot();
             }, this.options.interval);
         } else {
-            this.options.readerSuccess(doc);
+            this.options.readerSuccess(doc, scanner.logs);
             this.stop();
         }
     };

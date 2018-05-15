@@ -4,8 +4,19 @@ class Webcam {
         this.options = Webcam.extend({}, {
             debug: false,
             waitingText: 'waiting...',
-            devicesText: '',
             coverColor: 'rgba(0, 0, 0, 0.5)',
+            sizes: [
+                {
+                    label: '3 lines',
+                    start: 50,
+                    end: 80,
+                },
+                {
+                    label: '2 lines',
+                    start: 60,
+                    end: 80,
+                },
+            ],
             onReady: () => {
             },
             onStart: () => {
@@ -20,26 +31,44 @@ class Webcam {
             this.log('container missing');
             return;
         }
-        this.container.className = 'webcam-container';
+
+        if (this.options.sizes.length <= 0) {
+            this.log('missing sizes');
+            return;
+        }
+
+        this.container.className = 'mrz-reader-container';
         this.container.innerHTML = '';
 
-        this.devices = document.createElement('div');
-        this.devices.innerHTML = this.options.devicesText;
-        this.devices.className = 'webcam-devices';
-        this.devices.style.display = 'none';
-        this.container.appendChild(this.devices);
+        this.selectors = document.createElement('div');
+        this.selectors.className = 'mrz-reader-selectors';
+        this.selectors.style.display = 'none';
+        this.container.appendChild(this.selectors);
 
-        this.devicesSelect = document.createElement('select');
-        this.devicesSelect.onchange = this.change_device.bind(this);
-        this.devices.appendChild(this.devicesSelect);
+        this.devices = document.createElement('select');
+        this.devices.onchange = this.change_device.bind(this);
+        this.devices.style.display = 'none';
+        this.selectors.appendChild(this.devices);
+
+        this.size = 0;
+        this.sizes = document.createElement('select');
+        this.sizes.onchange = this.change_size.bind(this);
+        this.options.sizes.forEach((size, index) => {
+            let option = document.createElement('option');
+            option.value = index.toString();
+            option.innerText = size.label;
+            this.sizes.appendChild(option);
+        });
+        this.selectors.appendChild(this.sizes);
 
         this.waiting = document.createElement('div');
         this.waiting.innerHTML = this.options.waitingText;
-        this.waiting.className = 'webcam-waiting';
+        this.waiting.className = 'mrz-reader-waiting';
         this.waiting.style.display = 'none';
         this.container.appendChild(this.waiting);
 
         this.webcam = document.createElement('div');
+        this.webcam.className = 'mrz-reader-webcam';
         this.webcam.style.display = 'none';
         this.webcam.style.position = 'relative';
         this.webcam.style.fontSize = '0';
@@ -47,7 +76,7 @@ class Webcam {
 
 
         this.video = document.createElement('video');
-        this.video.className = 'webcam-video';
+        this.video.className = 'mrz-reader-video';
         this.webcam.appendChild(this.video);
 
         this.coverTop = document.createElement('div');
@@ -55,19 +84,19 @@ class Webcam {
         this.coverTop.style.top = '0';
         this.coverTop.style.left = '0';
         this.coverTop.style.right = '0';
-        this.coverTop.style.bottom = '50%';
+        this.coverTop.style.bottom = (100 - this.get_size().start) + '%';
         this.coverTop.style.background = this.options.coverColor;
-        this.coverTop.className = 'webcam-cover-top';
+        this.coverTop.className = 'mrz-reader-cover-top';
         this.webcam.appendChild(this.coverTop);
 
         this.coverBottom = document.createElement('div');
         this.coverBottom.style.position = 'absolute';
-        this.coverBottom.style.top = '83.33%';
+        this.coverBottom.style.top = this.get_size().end + '%';
         this.coverBottom.style.left = '0';
         this.coverBottom.style.right = '0';
         this.coverBottom.style.bottom = '0';
         this.coverBottom.style.background = this.options.coverColor;
-        this.coverBottom.className = 'webcam-cover-top';
+        this.coverBottom.className = 'mrz-reader-cover-top';
         this.webcam.appendChild(this.coverBottom);
 
         this.streams = [];
@@ -79,8 +108,8 @@ class Webcam {
 
         if (navigator.mediaDevices.enumerateDevices !== undefined) {
             // remove all current childs
-            while (this.devicesSelect.firstChild) {
-                this.devicesSelect.removeChild(this.devicesSelect.firstChild);
+            while (this.devices.firstChild) {
+                this.devices.removeChild(this.devices.firstChild);
             }
             this.devices_list = [];
             this.device = parseInt(window.localStorage.getItem('device') || 0);
@@ -96,7 +125,7 @@ class Webcam {
                             option.value = index.toString();
                             option.selected = index === this.device;
                             index++;
-                            this.devicesSelect.appendChild(option);
+                            this.devices.appendChild(option);
                         }
                     });
                     this.device = this.devices_list[this.device] ? this.device : 0;
@@ -115,8 +144,8 @@ class Webcam {
             return;
         }
         this.webcam.style.display = 'none';
-        if (this.devices_list.length > 0) {
-            this.devices.style.display = 'block';
+        if (this.devices_list.length > 1) {
+            this.devices.style.display = 'inline';
         }
         this.isOn = true;
         this.waiting.style.display = 'block';
@@ -129,15 +158,26 @@ class Webcam {
         this.options.onStop();
         this.webcam.style.display = 'none';
         this.waiting.style.display = 'none';
-        this.devices.style.display = 'none';
+        this.selectors.style.display = 'none';
         this.log('stopped');
     };
 
     change_device() {
-        this.device = parseInt(this.devicesSelect.value);
+        this.device = parseInt(this.devices.value);
         window.localStorage.setItem('device', this.device);
         this.stop_stream();
         this.request();
+    };
+
+    change_size() {
+        this.size = parseInt(this.sizes.value);
+        this.log('change size [' + this.get_size().label + ']');
+        this.coverTop.style.bottom = (100 - this.get_size().start) + '%';
+        this.coverBottom.style.top = this.get_size().end + '%';
+    };
+
+    get_size() {
+        return this.options.sizes[this.size];
     };
 
     request() {
@@ -237,6 +277,7 @@ class Webcam {
         this.log('camera loaded');
         this.webcam.style.display = 'inline-block';
         this.waiting.style.display = 'none';
+        this.selectors.style.display = 'block';
         this.options.onStart(this);
     };
 
@@ -245,9 +286,11 @@ class Webcam {
         let context = snapshot.getContext('2d');
         let w = this.video.videoWidth;
         let h = this.video.videoHeight;
+        const size = this.get_size();
+        const size_height = (size.end - size.start) / 100;
         snapshot.width = w;
-        snapshot.height = h / 3;
-        context.drawImage(this.video, 0, -(h / 2));
+        snapshot.height = h * size_height;
+        context.drawImage(this.video, 0, -(h * (size.start / 100)));
 
         return snapshot;
     };

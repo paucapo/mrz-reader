@@ -6,14 +6,11 @@
     <title>mrz-reader.js / webcam</title>
     <script type="text/javascript" src="../dist/mrz-reader.min.js"></script>
     <style>
-        video, canvas, img {
+        video, canvas, img, canvas {
+            display: block;
             max-height: 400px;
             max-width: 400px;
         }
-
-        #dump {
-        }
-
     </style>
 </head>
 
@@ -23,6 +20,8 @@
 
 <div id="cam-here"></div>
 
+<pre id="logs"></pre>
+
 <pre id="dump"></pre>
 
 <script type="text/javascript">
@@ -30,9 +29,15 @@
     // create Reader object
     var reader = new MRZ.Reader({
         target: 'cam-here',
-        readerSuccess: function (response) {
+        readerSuccess: function (response, logs) {
+            // dump logs
+            document.getElementById('logs').innerText = logs.join("\n");
             // on mrz detected. dump the results
             document.getElementById('dump').innerText = JSON.stringify(response, null, 2);
+        },
+        readerError: function (response, logs) {
+            // dump logs
+            document.getElementById('logs').innerText = logs.join("\n");
         }
     });
 
