@@ -6,6 +6,17 @@ class Document {
         this.total_length = mrz.replace(/\n/g, '').length;
         this.rows = mrz.split("\n");
 
+        this.errors = {
+            0: 'O',
+            2: 'Z',
+        };
+
+        this.characters = {
+            '<': 0,
+            'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15, 'G': 16, 'H': 17, 'I': 18, 'J': 19, 'K': 20, 'L': 21, 'M': 22,
+            'N': 23, 'O': 24, 'P': 25, 'Q': 26, 'R': 27, 'S': 28, 'T': 29, 'U': 30, 'V': 31, 'W': 32, 'X': 33, 'Y': 34, 'Z': 35
+        };
+
         this.exceptions = {
             'D': 'GE', //Germany
             'EUE': '', //European Union
@@ -29,6 +40,7 @@ class Document {
             'XXC': '', //Refugee, other than defined above
             'XXX': '' //Unspecified nationality
         };
+
         this.countries = {
             'AFG': 'AF', 'ALA': 'AX', 'ALB': 'AL', 'DZA': 'DZ', 'ASM': 'AS', 'AND': 'AD', 'AGO': 'AO', 'AIA': 'AI',
             'ATA': 'AQ', 'ATG': 'AG', 'ARG': 'AR', 'ARM': 'AM', 'ABW': 'AW', 'AUS': 'AU', 'AUT': 'AT', 'AZE': 'AZ',
@@ -259,10 +271,28 @@ class Document {
         return str.replace(/</g, ' ').trim();
     };
 
+    alpha(str) {
+        for (let number in this.errors) {
+            let wrong = new RegExp(number, 'g');
+            str = str.replace(wrong, this.errors[number]);
+        }
+        return str;
+    };
+
+    number(str) {
+        for (let number in this.errors) {
+            let wrong = new RegExp(this.errors[number], 'g');
+            str = str.replace(wrong, number);
+        }
+        return str;
+    };
+
     get_date(date) {
         let d = new Date();
         d.setFullYear(d.getFullYear() + 15);
         let centennial = ("" + d.getFullYear()).substring(2, 4);
+
+        date = this.number(date);
 
         let year;
         if (date.substring(0, 2) > centennial) {
@@ -274,12 +304,12 @@ class Document {
     };
 
     get_country(country) {
-        country = this.clean(country);
+        country = this.alpha(this.clean(country));
         return this.countries[country] || this.exceptions[country] || country;
     };
 
     get_names(names) {
-        names = this.clean(names);
+        names = this.alpha(this.clean(names));
         names = names.split('  ');
         return {
             first_name: names[1],
@@ -288,29 +318,24 @@ class Document {
     };
 
     check(str) {
-        let characters = {
-            '<': 0,
-            'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15, 'G': 16, 'H': 17, 'I': 18, 'J': 19, 'K': 20, 'L': 21, 'M': 22,
-            'N': 23, 'O': 24, 'P': 25, 'Q': 26, 'R': 27, 'S': 28, 'T': 29, 'U': 30, 'V': 31, 'W': 32, 'X': 33, 'Y': 34, 'Z': 35
-        };
 
-        let nmbrs = [];
+        let numbers = [];
         let weighting = [7, 3, 1];
         for (let i = 0; i < str.length; i++) {
             if (str[i].match(/[A-Za-z<]/)) {
-                nmbrs.push(characters[str[i]]); // character to digit
+                numbers.push(this.characters[str[i]]); // character to digit
             } else {
-                nmbrs.push(parseInt(str[i]));
+                numbers.push(parseInt(str[i]));
             }
         }
 
-        let curWeight = 0;
+        let weight = 0;
         let total = 0;
-        for (let j = 0; j < nmbrs.length; j++) {
-            total += (nmbrs[j] * weighting[curWeight]);
-            curWeight++;
-            if (curWeight === 3) {
-                curWeight = 0;
+        for (let j = 0; j < numbers.length; j++) {
+            total += (numbers[j] * weighting[weight]);
+            weight++;
+            if (weight === 3) {
+                weight = 0;
             }
         }
         return total % 10;
