@@ -1145,9 +1145,12 @@
 
       _proto.parse = function parse() {
         var first = this.sub(0, 1);
+        var country = this.sub(0, 3, 5);
         var doc = false;
 
-        if (this.rows.length === 2 && this.total_length === 88 && first === 'P') {
+        if (first === 'I' && country === 'FRA') {
+          doc = this.FranceID();
+        } else if (this.rows.length === 2 && this.total_length === 88 && first === 'P') {
           doc = this.TravelDocument3();
         } else if (this.rows.length === 2 && this.total_length === 88 && first === 'V') {
           doc = this.VisaA();
@@ -1174,6 +1177,7 @@
           'document_country': this.sub(0, 3, 5),
           'document_number': this.sub(1, 1, 9),
           'document_expiry': this.sub(1, 22, 27),
+          'document_issue': '',
           'names': this.sub(0, 6, 44),
           'personal_number': this.sub(1, 29, 42),
           'gender': this.sub(1, 21),
@@ -1197,6 +1201,7 @@
           'document_country': this.sub(0, 3, 5),
           'document_number': this.sub(1, 1, 9),
           'document_expiry': this.sub(1, 22, 27),
+          'document_issue': '',
           'names': this.sub(0, 6, 44),
           'personal_number': this.sub(1, 29, 44),
           'gender': this.sub(1, 21),
@@ -1217,6 +1222,7 @@
           'document_country': this.sub(0, 3, 5),
           'document_number': this.sub(1, 1, 9),
           'document_expiry': this.sub(1, 22, 27),
+          'document_issue': '',
           'names': this.sub(0, 6, 36),
           'personal_number': this.sub(1, 29, 36),
           'gender': this.sub(1, 21),
@@ -1238,6 +1244,7 @@
           'document_country': this.sub(0, 3, 5),
           'document_number': this.sub(0, 6, 14),
           'document_expiry': this.sub(1, 9, 14),
+          'document_issue': '',
           'names': this.sub(2, 1, 30),
           'personal_number': this.sub(0, 16, 30),
           'gender': this.sub(1, 8),
@@ -1260,6 +1267,7 @@
           'document_country': this.sub(0, 3, 5),
           'document_number': this.sub(1, 1, 9),
           'document_expiry': this.sub(1, 22, 27),
+          'document_issue': '',
           'names': this.sub(0, 6, 36),
           'personal_number': this.sub(1, 29, 35),
           'gender': this.sub(1, 21),
@@ -1275,6 +1283,30 @@
         };
       };
 
+      _proto.FranceID = function FranceID() {
+        this.type = 'FranceID';
+        var first_name = this.clean(this.sub(1, 14, 27)).replace(/  /g, '<');
+        var last_name = this.clean(this.sub(0, 6, 30));
+        return {
+          'document_type': this.sub(0, 1, 2),
+          'document_country': this.sub(0, 3, 5),
+          'document_number': this.sub(1, 1, 12),
+          'document_expiry': '',
+          'document_issue': this.sub(1, 1, 4) + '01',
+          'names': last_name + '<<' + first_name,
+          'personal_number': this.sub(1, 1, 12),
+          'gender': this.sub(1, 35),
+          'nationality': 'FRA',
+          'birth_date': this.sub(1, 28, 33),
+          'composite': this.sub(0, 1, 36) + this.sub(1, 1, 35),
+          'check_digits': {
+            'document_number': this.sub(1, 13),
+            'birth_date': this.sub(1, 34),
+            'composite': this.sub(1, 36)
+          }
+        };
+      };
+
       _proto.SimpleDocument = function SimpleDocument(doc) {
         var names = this.get_names(doc.names);
         var new_doc = {
@@ -1282,6 +1314,7 @@
           'document_country': this.get_country(doc.document_country),
           'document_number': this.clean(doc.document_number),
           'document_expiry': this.get_date(doc.document_expiry),
+          'document_issue': this.get_date(doc.document_issue),
           'first_name': names.first_name,
           'last_name': names.last_name[0],
           'second_last_name': names.last_name[1] || '',
@@ -1323,10 +1356,13 @@
       };
 
       _proto.clean = function clean(str) {
+        if (typeof str !== 'string') return str;
         return str.replace(/</g, ' ').trim();
       };
 
       _proto.alpha = function alpha(str) {
+        if (typeof str !== 'string') return str;
+
         for (var number in this.errors) {
           var wrong = new RegExp(number, 'g');
           str = str.replace(wrong, this.errors[number]);
@@ -1336,6 +1372,8 @@
       };
 
       _proto.number = function number(str) {
+        if (typeof str !== 'string') return str;
+
         for (var number in this.errors) {
           var wrong = new RegExp(this.errors[number], 'g');
           str = str.replace(wrong, number);
@@ -1345,6 +1383,10 @@
       };
 
       _proto.get_date = function get_date(date) {
+        if (date === '') {
+          return '';
+        }
+
         var d = new Date();
         d.setFullYear(d.getFullYear() + 15);
         var centennial = ("" + d.getFullYear()).substring(2, 4);
@@ -1357,7 +1399,17 @@
           year = '20' + date.substring(0, 2);
         }
 
-        return year + '-' + date.substring(2, 4) + '-' + date.substring(4, 6);
+        var str = year;
+
+        if (date.substring(2, 4) !== '') {
+          str += '-' + date.substring(2, 4);
+        }
+
+        if (date.substring(4, 6) !== '') {
+          str += '-' + date.substring(4, 6);
+        }
+
+        return str;
       };
 
       _proto.get_country = function get_country(country) {
