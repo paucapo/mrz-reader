@@ -1172,14 +1172,13 @@
       _proto.TravelDocument3 = function TravelDocument3() {
         // Passport
         this.type = 'TD3';
-        return {
+        var doc = {
           'document_type': this.sub(0, 1, 2),
           'document_country': this.sub(0, 3, 5),
           'document_number': this.sub(1, 1, 9),
           'document_expiry': this.sub(1, 22, 27),
           'document_issue': '',
           'names': this.sub(0, 6, 44),
-          'personal_number': this.sub(1, 29, 42),
           'gender': this.sub(1, 21),
           'nationality': this.sub(1, 11, 13),
           'birth_date': this.sub(1, 14, 19),
@@ -1188,10 +1187,17 @@
             'document_number': this.sub(1, 10),
             'document_expiry': this.sub(1, 28),
             'birth_date': this.sub(1, 20),
-            'personal_number': this.sub(1, 43),
             'composite': this.sub(1, 44)
           }
         };
+        var personal_number = this.sub(1, 29, 42);
+
+        if (this.clean(personal_number) !== '') {
+          doc.personal_number = personal_number;
+          doc.check_digits.personal_number = this.sub(1, 43);
+        }
+
+        return doc;
       };
 
       _proto.VisaA = function VisaA() {
@@ -1324,11 +1330,6 @@
           'birth_date': this.get_date(doc.birth_date),
           'valid': {}
         };
-
-        if (new_doc.personal_number !== '') {
-          new_doc.document_number = new_doc.personal_number;
-        }
-
         var valid_doc = true;
 
         for (var key in doc['check_digits']) {

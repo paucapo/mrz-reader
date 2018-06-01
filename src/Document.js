@@ -108,7 +108,7 @@ class Document {
 
     TravelDocument3() { // Passport
         this.type = 'TD3';
-        return {
+        let doc = {
             'document_type': this.sub(0, 1, 2),
             'document_country': this.sub(0, 3, 5),
             'document_number': this.sub(1, 1, 9),
@@ -116,7 +116,6 @@ class Document {
             'document_issue': '',
 
             'names': this.sub(0, 6, 44),
-            'personal_number': this.sub(1, 29, 42),
             'gender': this.sub(1, 21),
             'nationality': this.sub(1, 11, 13),
             'birth_date': this.sub(1, 14, 19),
@@ -126,10 +125,17 @@ class Document {
                 'document_number': this.sub(1, 10),
                 'document_expiry': this.sub(1, 28),
                 'birth_date': this.sub(1, 20),
-                'personal_number': this.sub(1, 43),
                 'composite': this.sub(1, 44)
             }
         };
+
+        let personal_number = this.sub(1, 29, 42);
+        if (this.clean(personal_number) !== '') {
+            doc.personal_number = personal_number;
+            doc.check_digits.personal_number = this.sub(1, 43);
+        }
+
+        return doc;
     };
 
     VisaA() {
@@ -273,10 +279,6 @@ class Document {
 
             'valid': {}
         };
-
-        if (new_doc.personal_number !== '') {
-            new_doc.document_number = new_doc.personal_number;
-        }
 
         let valid_doc = true;
         for (let key in doc['check_digits']) {
